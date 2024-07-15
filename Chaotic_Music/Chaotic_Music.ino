@@ -1,4 +1,4 @@
-// Tanaka neuron model music //
+// Simplest chaotic map music //
 
 #include "SAM2695.h"
 
@@ -14,11 +14,7 @@ float randomf(float minf, float maxf) { return minf + (esp_random()%(1UL << 31))
 static void on_button(void){ rndrule(); }
 
   float x = 0.1f;
-  float y = 0.1f;
-  float a = 0.5f;
-  float k = 0.7f;
-  float e = 0.05f;
-  float u = 0.0f;
+  float a = 2.0f;
   bool drumon = true;
 
 void rndrule(){
@@ -31,8 +27,7 @@ void rndrule(){
   synth.setAllNotesOff(5);
 
   x = 0.1f;
-  y = 0.1f;
-  e = randomf(0.0449f, 0.0579f);
+  a = randomf(1.499f, 1.999f);
          
 }
 
@@ -70,13 +65,10 @@ void setup() {
 void loop() {
   
   float nx = x;
-  float ny = y;
 
-  x = ny;
-  y = k * ny + nx + a - u;      
-  u = 1.0f / (1.0f + expf(-ny / e));
+  x = a - powf(nx, 2.0f);
             
-  uint8_t xout = 64.0f + (128.0f * x);
+  uint8_t xout = 64.0f + (32.0f * x);
   uint8_t poly = xout%6;
   uint8_t prog = map(xout, 0, 123, 0, xout);
 
