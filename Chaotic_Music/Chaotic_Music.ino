@@ -7,7 +7,8 @@ M5UnitSynth synth;
 #define KEY 41
 #define BPM 120
 #define DIV 4
-#define VOL 28
+#define REV 96
+#define VOL 25
 
 float randomf(float minf, float maxf) { return minf + (esp_random()%(1UL << 31))*(maxf - minf) / (1UL << 31); }
 
@@ -15,7 +16,6 @@ static void on_button(void){ rndrule(); }
 
   float x = 0.1f;
   float a = 2.0f;
-  bool drumon = true;
 
 void rndrule(){
 
@@ -48,12 +48,12 @@ void setup() {
   synth.setPan(4, 40); // panning chan.5
   synth.setPan(5, 88); // panning chan.6
 
-  synth.setReverb(0, 4, 80, 0); // reverb chan.1
-  synth.setReverb(1, 4, 80, 0); // reverb chan.2
-  synth.setReverb(2, 4, 80, 0); // reverb chan.3
-  synth.setReverb(3, 4, 80, 0); // reverb chan.4
-  synth.setReverb(4, 4, 80, 0); // reverb chan.5
-  synth.setReverb(5, 4, 80, 0); // reverb chan.6
+  synth.setReverb(0, 4, REV, 0); // reverb chan.1
+  synth.setReverb(1, 4, REV, 0); // reverb chan.2
+  synth.setReverb(2, 4, REV, 0); // reverb chan.3
+  synth.setReverb(3, 4, REV, 0); // reverb chan.4
+  synth.setReverb(4, 4, REV, 0); // reverb chan.5
+  synth.setReverb(5, 4, REV, 0); // reverb chan.6
 
   pinMode(KEY, INPUT);
   attachInterrupt(digitalPinToInterrupt(KEY), on_button, FALLING);
@@ -76,21 +76,19 @@ void loop() {
   if (prog == 78) prog = 77; // replace whistle to shakuhachi
   synth.setInstrument(0, poly, prog & 123); // programs 0-123
 
-  uint8_t vol = 32 + (xout / 2);
-  uint8_t note = 24 + (xout / 2);
+  uint8_t vol = map(xout, 0, 127, 32, 96);
+  uint8_t note = map(xout, 0, 127, 24, 70);
   synth.setNoteOn(poly, note & 127, vol & 127);
   
   uint8_t drum = map(xout, 0, 127, 34, 82); // note 35-81 drum kit
   if (drum == 72) drum = 80; // replace long whistle to mute triangle
-  synth.setNoteOn(9, drum & 127, vol & 127);
-  uint8_t vold = map(xout, 0, 127, 68, 88);
-  if (drumon == true) synth.setNoteOn(9, 35, vold & 127); // bass drum
-  drumon = !drumon;
+  uint8_t vold = map(xout, 0, 127, 48, 80);
+  synth.setNoteOn(9, drum & 127, vold & 127);
 
   uint16_t tempo = 60000 / BPM;
   delay(tempo / DIV);
 
-  uint8_t rel_off = xout%8;
+  uint8_t rel_off = xout%10;
 
   if (rel_off == 0) synth.setAllNotesOff(0);
   if (rel_off == 1) synth.setAllNotesOff(1);
